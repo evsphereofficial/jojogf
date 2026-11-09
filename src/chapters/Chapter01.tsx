@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { animate } from "animejs";
 import { ChapterShell } from "@/components/layout/ChapterShell";
 import { DisplayText } from "@/components/typography/DisplayText";
 import { MetaLabel } from "@/components/typography/MetaLabel";
@@ -11,6 +12,7 @@ import { SwatchStrip } from "@/components/manga/SwatchStrip";
 import { PlaceholderArt } from "@/components/manga/PlaceholderArt";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
+import { useDragRotate } from "@/hooks/useDragRotate";
 import { useInViewport } from "@/hooks/useInViewport";
 import { useMotionOK } from "@/hooks/useMotionOK";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
@@ -24,6 +26,9 @@ const MangaVolumeScene = dynamic(
   () => import("@/three/scenes/MangaVolumeScene"),
   { ssr: false, loading: () => null },
 );
+
+/** Original Latin-graphic SFX (design.md §2.1 — no copyrighted glyphs). */
+const SFX_POOL = ["GOROGORO", "DODODO", "DOKAN", "DOON", "ZAN", "BASH"];
 
 const FLOAT_PANELS = [
   {
@@ -79,7 +84,7 @@ function VolumeFallback() {
 /**
  * CHAPTER 01 — THE AWAKENING (design.md §6.1).
  * Explosive pinned entrance: cinematic load choreography, layered
- * manga panels, 3D volume, angular ink wipe into Chapter 02.
+ * manga panels, a drag-to-spin 3D volume, angular ink wipe out.
  */
 export function Chapter01() {
   const chapter = CHAPTERS[0];
@@ -89,11 +94,15 @@ export function Chapter01() {
   const progressRef = useRef(0);
   const pointerRef = useRef({ x: 0, y: 0 });
   const motionOK = useMotionOK();
+  const { step: stepDrag, handlers } = useDragRotate();
 
-  /* Pointer → 3D parallax (data via refs, zero renders) */
+  /* Pointer → 3D parallax. Skipped for touch: during a touch scroll the
+     browser still emits pointermove, which would jitter the volume and
+     burn main-thread time for no visual gain (design.md §12). */
   useEffect(() => {
     if (!motionOK) return;
     const onMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
       pointerRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointerRef.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
     };
@@ -104,6 +113,19 @@ export function Chapter01() {
   /* Selective 3D mounting (design.md §11.1) */
   const webgl = useWebGLSupport();
   const nearViewport = useInViewport(handle.ref, "50% 0px 50% 0px");
+
+  /* Tap-to-shuffle SFX stamp (interactive, anime.js one-shot) */
+  const [sfxIndex, setSfxIndex] = useState(0);
+  const shuffleSfx = () => {
+    setSfxIndex((i) => (i + 1 + Math.floor(Math.random() * (SFX_POOL.length - 1))) % SFX_POOL.length);
+  };
+  const popSfx = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const inner = event.currentTarget.querySelector(".hero-sfx-inner");
+    if (inner) {
+      animate(inner, { scale: [1, 1.45, 1], duration: 520, ease: "outBack" });
+    }
+    shuffleSfx();
+  };
 
   useChoreography(contentRef, ({ q, mm }) => {
     /* ---------- Cinematic entrance (mount, once) ---------- */
@@ -144,7 +166,7 @@ export function Chapter01() {
       .from(
         q(".hero-sfx"),
         { scale: 0, opacity: 0, duration: 0.5, ease: EASE.back, stagger: 0.16 },
-        "-=0.6",
+        "-=0.6"
       )
       .from(q(".hero-cue"), {
         opacity: 0,
@@ -162,7 +184,7 @@ export function Chapter01() {
           stagger: 0.06,
           ease: EASE.back,
         },
-        "-=0.5",
+        "-=0.5"
       );
 
     /* ---------- Scroll choreography ---------- */
@@ -192,7 +214,7 @@ export function Chapter01() {
             rotate: (i: number) => (i % 2 ? 12 : -10),
             stagger: 0.05,
           },
-          0,
+          0
         )
         .to(q(".hero-copy"), { yPercent: -20, opacity: 0.92 }, 0)
         .to(q(".hero-title"), { xPercent: -3, scale: 1.05 }, 0)
@@ -206,33 +228,28 @@ export function Chapter01() {
               "polygon(-10% -10%, 110% -40%, 110% 110%, -10% 110%)",
             ease: "power2.in",
           },
-          0.68,
+          0.68
         );
     });
 
     mm.add("(max-width: 1023px)", () => {
       const stage = q(".hero-stage")[0];
 
+      /* BUGFIX: this used to be `start: "top bottom"`, which makes
+         progress 0.5 at page load — the volume then rendered 90°
+         edge-on as a black slab behind the title. Anchoring to
+         `top top` gives progress 0 while the hero is at rest. */
       ScrollTrigger.create({
         trigger: stage,
-        start: "top bottom",
+        start: "top top",
         end: "bottom top",
         onUpdate: (self) => {
           progressRef.current = self.progress;
         },
       });
 
-      gsap.to(q(".float-panel"), {
-        yPercent: -22,
-        stagger: 0.06,
-        ease: "none",
-        scrollTrigger: {
-          trigger: stage,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 0.5,
-        },
-      });
+      /* No float-panel scrub on phones: those figures are `hidden`
+         below lg, so the tweens were pure per-frame waste. */
     });
   }, []);
 
@@ -256,19 +273,37 @@ export function Chapter01() {
           className="hero-rays opacity-[0.13]"
         />
 
-        {/* 3D manga volume (or DOM fallback) */}
+        {/* 3D manga volume (or DOM fallback).
+            Phones: parked in the top half so it never sits as a slab
+            behind the headline; desktop: right-hand column. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 lg:left-[48%]"
+          className={cn(
+            "absolute left-0 right-0 top-0 z-0 h-[50svh] cursor-grab touch-pan-y active:cursor-grabbing",
+            "lg:bottom-0 lg:left-[48%] lg:h-auto",
+          )}
+          {...handlers}
         >
           {webgl && nearViewport ? (
             <MangaVolumeScene
               progressRef={progressRef}
               pointerRef={pointerRef}
+              stepDrag={stepDrag}
             />
           ) : (
             <VolumeFallback />
           )}
+
+          {/* Drag affordance (touch-first) */}
+          <span
+            className={cn(
+              "pointer-events-none absolute inset-x-0 bottom-2 z-10 hidden justify-center lg:hidden",
+            )}
+          >
+            <span className="label-chip rotate-[-2deg] text-[0.5625rem]">
+              DRAG TO SPIN
+            </span>
+          </span>
         </div>
 
         {/* Floating manga panels (desktop layering) */}
@@ -297,12 +332,12 @@ export function Chapter01() {
 
           <h1
             id={titleId}
-            className="hero-title mt-5 overflow-hidden font-display text-display-xl text-ink uppercase"
+            className="hero-title text-stroke-primary mt-5 overflow-hidden font-display text-display-xl text-ink uppercase"
           >
             <DisplayText text="BIZARRE LOVE" split="chars" />
           </h1>
 
-          <p className="hero-headline mt-4 font-display text-display-md text-ink uppercase">
+          <p className="hero-headline text-stroke-primary mt-4 font-display text-display-md text-ink uppercase">
             OUR BIZARRE{" "}
             <span className="font-accent italic">ADVENTURE!</span>
           </p>
@@ -312,18 +347,22 @@ export function Chapter01() {
           </p>
         </div>
 
-        {/* SFX typography */}
-        <span
-          aria-hidden="true"
-          className="hero-sfx pointer-events-none absolute top-[14%] right-[6%] z-10 rotate-12 font-display text-2xl text-ink opacity-75 text-outline-paper sm:text-4xl lg:text-5xl"
+        {/* SFX typography — tap to shuffle (interactive) */}
+        <button
+          type="button"
+          onClick={popSfx}
+          aria-label="Tap for another sound effect"
+          className="hero-sfx absolute top-[14%] right-[6%] z-10 rotate-12 font-display text-2xl text-ink opacity-75 text-outline-paper transition-colors duration-150 hover:text-impact sm:text-4xl lg:text-5xl"
         >
-          {content.ch01.sfx[0]}
-        </span>
+          <span className="hero-sfx-inner inline-block">
+            {SFX_POOL[sfxIndex]}
+          </span>
+        </button>
         <span
           aria-hidden="true"
           className="hero-sfx pointer-events-none absolute bottom-[22%] left-[6%] z-10 hidden -rotate-6 font-display text-5xl text-ink opacity-75 text-outline-paper lg:block"
         >
-          {content.ch01.sfx[1]}
+          {SFX_POOL[(sfxIndex + 3) % SFX_POOL.length]}
         </span>
 
         {/* Swatches (reference nod) */}

@@ -21,7 +21,9 @@ export const grotesk = Space_Grotesk({
 export const playfair = Playfair_Display({
   subsets: ["latin"],
   style: "italic",
-  weight: ["400", "700", "900"],
+  /* only the 400 italic accent is used — trimming 700/900 saves
+     two font downloads on phones (design.md §11.4 budgets) */
+  weight: "400",
   display: "swap",
   variable: "--font-playfair",
   fallback: ["Georgia", "serif"],

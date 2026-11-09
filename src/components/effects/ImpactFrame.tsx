@@ -16,7 +16,9 @@ export function ImpactFrame({ sfx, className }: ImpactFrameProps) {
     <div
       aria-hidden="true"
       className={cn(
-        "impact-frame pointer-events-none absolute inset-0 z-30 flex items-center justify-center opacity-0",
+        /* `invisible` (not just opacity-0): the full-screen layers are
+           not painted until GSAP autoAlpha flips them on */
+        "impact-frame pointer-events-none absolute inset-0 z-30 flex items-center justify-center invisible opacity-0",
         className,
       )}
     >

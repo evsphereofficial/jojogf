@@ -42,10 +42,13 @@ export function Experience() {
       <ProgressBar />
       <ChapterNavigator />
 
-      {/* Global print grain — procedural, zero downloads */}
+      {/* Global print grain — procedural, zero downloads.
+          Phone perf: full-screen mix-blend-multiply forces an extra
+          compositing pass over every frame, so the blend is enabled
+          from lg up only; below that the 5% grain draws plain. */}
       <div
         aria-hidden="true"
-        className="paper-grain pointer-events-none fixed inset-0 z-[45] opacity-[0.05] mix-blend-multiply"
+        className="paper-grain pointer-events-none fixed inset-0 z-[45] opacity-[0.05] lg:mix-blend-multiply"
       />
 
       <main id="main" className="relative w-full">

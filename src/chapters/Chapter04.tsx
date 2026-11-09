@@ -145,12 +145,16 @@ export function Chapter04() {
       });
     });
 
-    /* Impact frame flashes once at the section seam */
+    /* Impact frame flashes once at the section seam.
+       autoAlpha (not opacity): the base class is `invisible`, so the
+       full-screen red/paper layers are skipped by the painter until
+       the flash runs — cheaper on phones and correct under reduced
+       motion (frame stays hidden when the timeline never plays). */
     gsap.fromTo(
       q(".impact-flash"),
-      { opacity: 0 },
+      { autoAlpha: 0 },
       {
-        opacity: 1,
+        autoAlpha: 1,
         duration: 0.12,
         yoyo: true,
         repeat: 1,

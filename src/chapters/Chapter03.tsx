@@ -8,6 +8,7 @@ import { MetaLabel } from "@/components/typography/MetaLabel";
 import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
+import { useDragRotate } from "@/hooks/useDragRotate";
 import { useInViewport } from "@/hooks/useInViewport";
 import { useMotionOK } from "@/hooks/useMotionOK";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
@@ -57,6 +58,7 @@ export function Chapter03() {
   const progressRef = useRef(0);
   const pointerRef = useRef({ x: 0, y: 0 });
   const motionOK = useMotionOK();
+  const { step: stepDrag, handlers } = useDragRotate();
 
   const webgl = useWebGLSupport();
   const nearViewport = useInViewport(handle.ref, "60% 0px 60% 0px");
@@ -64,6 +66,9 @@ export function Chapter03() {
   useEffect(() => {
     if (!motionOK) return;
     const onMove = (e: PointerEvent) => {
+      /* touch pointers fire on every scroll — parallax is mouse/pen
+         only (design.md §12) */
+      if (e.pointerType === "touch") return;
       pointerRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointerRef.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
     };
@@ -201,15 +206,30 @@ export function Chapter03() {
               className="stand-rays pointer-events-none absolute inset-[-30%] opacity-30 speed-rays speed-rays-primary"
             />
 
+            {/* Drag-to-inspect surface: touch-pan-y keeps vertical
+                scrolling native; horizontal drags spin the Stand */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-10"
+              className="absolute inset-0 z-10 cursor-grab touch-pan-y active:cursor-grabbing"
+              {...handlers}
             >
-              {webgl && nearViewport ? (
-                <StandScene progressRef={progressRef} pointerRef={pointerRef} />
-              ) : (
-                <StandFallback />
-              )}
+              <div className="pointer-events-none absolute inset-0">
+                {webgl && nearViewport ? (
+                  <StandScene
+                    progressRef={progressRef}
+                    pointerRef={pointerRef}
+                    stepDrag={stepDrag}
+                  />
+                ) : (
+                  <StandFallback />
+                )}
+              </div>
+
+              <span className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center">
+                <span className="label-chip rotate-[2deg] text-[0.5625rem]">
+                  DRAG TO INSPECT
+                </span>
+              </span>
             </div>
 
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center p-4">

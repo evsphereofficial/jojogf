@@ -10,6 +10,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
+  /* Phone perf (design.md §12): iOS fires resize on every toolbar
+     show/hide while scrolling — ignoring it stops a ScrollTrigger
+     refresh storm. limitCallbacks caps scrub callbacks to once per
+     frame so a fast flick never queues dozens of updates. */
+  ScrollTrigger.config({ ignoreMobileResize: true, limitCallbacks: true });
   /* Keep pin measurements correct after fonts/images settle */
   if (typeof document !== "undefined" && document.fonts) {
     document.fonts.ready.then(() => ScrollTrigger.refresh());

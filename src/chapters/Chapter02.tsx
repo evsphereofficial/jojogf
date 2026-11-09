@@ -63,21 +63,26 @@ export function Chapter02() {
       },
     });
 
-    /* Panels print in — art wipes left→right under scrub */
-    const printTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: q(".chapter-content")[0],
-        start: "top 62%",
-        end: "bottom 78%",
-        scrub: 0.5,
-      },
-    });
-    q(".enc-print").forEach((el, i) => {
-      printTl.fromTo(
+    /* Panels print in — art + caption wipe left→right.
+       BUGFIX: this used to be one timeline spanning the entire
+       chapter, so a panel that was already fully on screen sat at
+       ~30% revealed and looked like broken art with a chopped
+       caption. Each panel now reveals against its own scroll range
+       and is fully printed by the time it reaches mid-viewport. */
+    q(".enc-print").forEach((el) => {
+      gsap.fromTo(
         el,
         { clipPath: "inset(0 100% 0 0)" },
-        { clipPath: "inset(0 0% 0 0)", duration: 1, ease: "none" },
-        i * 0.7,
+        {
+          clipPath: "inset(0 0% 0 0)",
+          ease: "none",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 88%",
+            end: "top 46%",
+            scrub: 0.4,
+          },
+        },
       );
     });
 

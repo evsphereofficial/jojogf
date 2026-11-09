@@ -16,7 +16,15 @@ export function SmoothScroll() {
   const motionOK = useMotionOK();
 
   useEffect(() => {
-    if (!motionOK) {
+    /* Phone perf (design.md §12): touch devices keep 100% native
+       scrolling — no Lenis rAF loop, no touch interception, no
+       extra main-thread work per frame. Wheel devices still get
+       smoothing. */
+    const coarse =
+      typeof window !== "undefined" &&
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
+    if (!motionOK || coarse) {
       setLenis(null);
       ScrollTrigger.refresh();
       return;

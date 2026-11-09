@@ -42,7 +42,7 @@ export function ChapterNavigator() {
       <div className="relative flex items-center gap-2 lg:flex-col lg:gap-2.5">
         <ul
           role="list"
-          className="flex flex-1 items-center justify-center gap-1 lg:flex-none lg:flex-col lg:justify-start"
+          className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto scrollbar-hide lg:flex-none lg:flex-col lg:justify-start lg:overflow-visible"
         >
           {CHAPTERS.map((c) => {
             const isActive = c.index === active;
@@ -103,7 +103,7 @@ export function ChapterNavigator() {
               : "Toggle motion effects"
           }
           className={cn(
-            "shrink-0 border-2 px-2 py-1.5 font-sans text-[0.5625rem] font-bold tracking-[0.14em] uppercase transition-colors duration-150",
+            "shrink-0 border-2 px-2 py-1.5 font-sans text-[0.6875rem] font-bold tracking-[0.14em] uppercase transition-colors duration-150",
             systemReduced
               ? "cursor-not-allowed border-paper/20 text-paper/40"
               : motionOK

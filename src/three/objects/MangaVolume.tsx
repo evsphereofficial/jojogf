@@ -1,29 +1,42 @@
 "use client";
 
 import { useEffect, useMemo, useRef, type RefObject } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { createCoverTexture, getToonGradient } from "../materials/toon";
+import type { DragStep } from "@/hooks/useDragRotate";
 
 export interface VolumeObjectProps {
   /** 0..1 chapter scroll progress — written by GSAP, read in useFrame */
   progressRef: RefObject<number>;
   /** -1..1 pointer position for parallax */
   pointerRef?: RefObject<{ x: number; y: number }>;
+  /** optional drag-to-spin integration (tap = spin impulse) */
+  stepDrag?: DragStep;
 }
 
 /**
  * Stylized manga tankōbon (design.md §11.2): ink cover, cream page
  * block, procedurally drawn cover art. Flat toon shading only.
+ *
+ * Phone behaviour: the viewport is narrow, so the volume scales down
+ * and uses a shorter rotation sweep — otherwise it fills the screen
+ * and swallows the hero copy (design.md §12).
  */
-export function MangaVolume({ progressRef, pointerRef }: VolumeObjectProps) {
+export function MangaVolume({ progressRef, pointerRef, stepDrag }: VolumeObjectProps) {
   const group = useRef<THREE.Group>(null);
+  const size = useThree((state) => state.size);
   const cover = useMemo(() => createCoverTexture(), []);
   const gradient = useMemo(() => getToonGradient(), []);
 
+  /* Narrow viewport = compact presentation (ssr:false, client only) */
+  const compact = size.width < 1024;
+  const scale = compact ? 0.62 : 1;
+  const sweep = compact ? Math.PI * 1.0 : Math.PI * 1.35;
+
   useEffect(() => () => cover.dispose(), [cover]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const g = group.current;
     if (!g) return;
     const p = progressRef.current ?? 0;
@@ -31,10 +44,27 @@ export function MangaVolume({ progressRef, pointerRef }: VolumeObjectProps) {
     const py = pointerRef?.current?.y ?? 0;
     const t = state.clock.elapsedTime;
 
-    // Scroll-driven turn + pointer parallax + idle float
-    g.rotation.y = -0.55 + p * Math.PI * 1.35 + px * 0.35;
-    g.rotation.x = 0.1 + py * 0.18 + Math.sin(t * 0.7) * 0.03;
+    /* drag + inertial coast — `step` lives in the hook, so this
+       component only reads the returned offsets (refs-only, no
+       React re-render per pointer move) */
+    let dragX = 0;
+    let dragY = 0;
+    if (stepDrag) {
+      const d = stepDrag(delta);
+      dragX = d.x;
+      dragY = d.y;
+    }
+
+    /* Scroll-driven turn + pointer parallax + drag + idle float.
+       `ease` keeps delta-time independent for the frame-rate-sensitive
+       pointer term; the scroll term is absolute (scrub-driven). */
+    const targetY = -0.55 + p * sweep + px * 0.35 + dragX;
+    const targetX = 0.1 + py * 0.18 + dragY + Math.sin(t * 0.7) * 0.03;
+
+    g.rotation.y = targetY;
+    g.rotation.x = targetX;
     g.position.y = Math.sin(t * 0.9) * 0.09;
+    g.scale.setScalar(scale);
   });
 
   return (

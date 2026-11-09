@@ -585,7 +585,7 @@ transition + ChapterShell framework (matches the brief's explicit fallback instr
 - [x] Chapter navigator functional (jump + active tracking)
 - [x] Scroll-driven transitions working across chapter seams
 - [x] ≥1 meaningful interactive 3D scene (Ch01 volume + Ch03 Stand, both pointer-reactive)
-- [ ] Mobile layouts without distortion — **pending visual QA** (code paths + fallbacks in place)
+- [ ] Mobile layouts without distortion — code paths hardened in the phone pass (D13–D16; both reported phone bugs fixed); **final visual QA on physical devices still outstanding** (no browser tooling in this session)
 - [x] No animation-library conflicts; all timelines/listeners/WebGL cleaned up (D9 ownership rules)
 - [x] Reduced-motion path supported (media query + in-app toggle)
 - [x] Placeholders replaceable via data files only (76 `[PLACEHOLDER` strings, all in `src/data/`)
@@ -623,4 +623,31 @@ three.js + R3F absent from the initial graph (verified by scanning served chunks
 - **D12** *(implementation)* Ch07 desktop rail geometry: track carries `pt-16`, milestone markers sit
   at `-top-[86px]` so their centres land exactly on the SVG rail at `top-0`; the rail draws with
   `pathLength=1` in sync with the track's x-translation.
+- **D13** *(bugfix, phone reports)* Two reported phone bugs fixed at the root cause:
+  (a) Ch01 mobile ScrollTrigger ran `start:"top bottom"` → progress **0.5 at page load**, rotating the
+  volume 90° edge-on as a black slab behind the title; re-anchored to `top top`/`bottom top`.
+  (b) Ch02's print-in clip was a single timeline spanning the whole chapter, so a panel fully in view
+  sat ~30% revealed (chopped art + caption); replaced with **per-panel** `fromTo` scrubs
+  (`top 88%` → `top 46%`), the same pattern Ch08 already used.
+- **D14** *(implementation, phone performance pass — no layout changes)*
+  `ScrollTrigger.config({ ignoreMobileResize: true, limitCallbacks: true })` (iOS toolbar resize no
+  longer storms `refresh()`); Lenis is **skipped entirely on coarse pointers** (`(hover: none) and
+  (pointer: coarse)`) — 100% native touch scroll, fulfilling D3; Playfair trimmed to weight 400 only;
+  the full-screen grain overlay's `mix-blend-multiply` is `lg:`-only; WebGL `dpr` capped to 1.25 and
+  objects scaled compact below 1024px; touch pointers ignored by all pointer-parallax/tilt listeners;
+  hidden (`lg:block`) float-panel scrub removed from the mobile Ch01 path; Ch04 `ImpactFrame` base is
+  `invisible` + GSAP `autoAlpha` (paint skipped until the one flash, correct under reduced motion).
+- **D15** *(implementation, interaction)* `hooks/useDragRotate.ts` powers drag-to-spin toys: the Ch01
+  volume ("DRAG TO SPIN") and the Ch03 Stand ("DRAG TO INSPECT", new drag surface over the stage).
+  Touch drags engage only once horizontal movement dominates (vertical swipe = page scroll, via
+  `touch-action: pan-y` + `pointercancel` reset); a tap kicks an inertial spin that decays in
+  `useFrame`. The hook exposes **`step(delta)`** rather than a mutable ref: React Compiler's
+  `react-hooks/immutability` rule forbids mutating props inside `useFrame`, so all mutation stays in
+  the hook where the ref is born, and the 3D objects only *read* the returned yaw/pitch.
+  Ch01 SFX words are also tappable (anime.js `outBack` pop + shuffle).
+- **D16** *(implementation, phone legibility + chrome)* Hero display type carries
+  `-webkit-text-stroke` yellow ring (`text-stroke-primary`, `paint-order: stroke fill`) so black type
+  stays legible over the ink volume without clipping in `overflow-hidden` boxes. The bottom chapter
+  bar no longer overflows ≤420px screens: the marker `<ul>` is `min-w-0 flex-1 overflow-x-auto` with
+  a `scrollbar-hide` utility (still swipeable), and the FX toggle label raised to 11px (§13 minimum).
 

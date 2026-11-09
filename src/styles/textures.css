@@ -104,6 +104,16 @@
   --line-color: var(--c-primary);
 }
 
+/* --- Text-stroke ring ------------------------------------
+       Unlike text-shadow this draws ON the glyph outline, so it
+       never gets clipped by an `overflow-hidden` heading box.
+       Yellow ring on a yellow ground is invisible; over the ink
+       3D volume it keeps black display type legible. ---------- */
+.text-stroke-primary {
+  -webkit-text-stroke: 2px var(--c-primary);
+  paint-order: stroke fill;
+}
+
 /* --- Outlined display type (8-way text-shadow, no glyph
        thinning — decorative headings only) ----------------- */
 .text-outline-ink {
@@ -149,6 +159,17 @@
   letter-spacing: 0.18em;
   background: var(--c-primary);
   color: var(--c-ink);
+}
+
+/* --- Hidden scrollbar (navigator rail — remains swipeable)
+       Phone perf: avoids layout/paint from a visible scrollbar
+       while keeping overflow-x scrolling. ------------------- */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* --- Frame-stepped decorative motion (~12fps) -------------- */

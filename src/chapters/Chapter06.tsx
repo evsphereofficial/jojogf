@@ -194,6 +194,9 @@ export function Chapter06() {
     const stage = q(".uni-stage")[0];
     if (stage) {
       const onMove = (e: PointerEvent) => {
+        /* touch pointers fire continuously while scrolling past the
+           stage — tilt stays a mouse/pen affordance (design.md §12) */
+        if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
         const rect = stage.getBoundingClientRect();
         const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
