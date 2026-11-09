@@ -1,0 +1,210 @@
+/* ============================================================
+   BIZARRE LOVE — PRINT & COMIC TEXTURES
+   All procedural: zero image downloads. Depth comes from
+   texture, never from gradients (design.md §3.2 / §5.7).
+   ============================================================ */
+
+/* --- Halftone dot fields --------------------------------- */
+.halftone {
+  background-image: radial-gradient(
+    circle at center,
+    var(--tex-dot, var(--c-ink)) var(--halftone-dot),
+    transparent calc(var(--halftone-dot) + 0.3px)
+  );
+  background-size: var(--halftone-size) var(--halftone-size);
+}
+.halftone-primary {
+  --tex-dot: var(--c-primary);
+}
+.halftone-paper {
+  --tex-dot: var(--c-paper);
+}
+.halftone-impact {
+  --tex-dot: var(--c-impact);
+}
+.halftone-electric {
+  --tex-dot: var(--c-electric);
+}
+.halftone-dense {
+  --halftone-size: 6px;
+}
+.halftone-coarse {
+  --halftone-size: 16px;
+}
+.halftone-fade {
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    #000 10%,
+    transparent 72%
+  );
+  mask-image: radial-gradient(ellipse at center, #000 10%, transparent 72%);
+}
+
+/* --- Screentone (diagonal hatch) -------------------------- */
+.screentone {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--tex-dot, var(--c-ink)) 0 1px,
+    transparent 1px 6px
+  );
+}
+
+/* --- Paper grain (SVG turbulence, ~1KB) ------------------- */
+.paper-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: var(--grain-size) var(--grain-size);
+}
+
+/* --- Radial manga speed lines ----------------------------- */
+.speed-rays {
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg 2.2deg,
+    var(--ray-color, var(--c-ink)) 2.2deg 2.9deg
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 0 26%,
+    #000 64%
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 0 26%,
+    #000 64%
+  );
+}
+.speed-rays-primary {
+  --ray-color: var(--c-primary);
+}
+.speed-rays-paper {
+  --ray-color: var(--c-paper);
+}
+.speed-rays-impact {
+  --ray-color: var(--c-impact);
+}
+
+/* --- Horizontal edge speed lines -------------------------- */
+.speed-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 12px,
+    var(--line-color, var(--c-ink)) 12px 14px
+  );
+  -webkit-mask-image: linear-gradient(to right, #000, transparent);
+  mask-image: linear-gradient(to right, #000, transparent);
+}
+.speed-lines-right {
+  -webkit-mask-image: linear-gradient(to left, #000, transparent);
+  mask-image: linear-gradient(to left, #000, transparent);
+}
+.speed-lines-paper {
+  --line-color: var(--c-paper);
+}
+.speed-lines-primary {
+  --line-color: var(--c-primary);
+}
+
+/* --- Outlined display type (8-way text-shadow, no glyph
+       thinning — decorative headings only) ----------------- */
+.text-outline-ink {
+  text-shadow:
+    -2px -2px 0 var(--c-ink), 0 -2px 0 var(--c-ink),
+    2px -2px 0 var(--c-ink), 2px 0 0 var(--c-ink),
+    2px 2px 0 var(--c-ink), 0 2px 0 var(--c-ink),
+    -2px 2px 0 var(--c-ink), -2px 0 0 var(--c-ink);
+}
+.text-outline-paper {
+  text-shadow:
+    -2px -2px 0 var(--c-paper), 0 -2px 0 var(--c-paper),
+    2px -2px 0 var(--c-paper), 2px 0 0 var(--c-paper),
+    2px 2px 0 var(--c-paper), 0 2px 0 var(--c-paper),
+    -2px 2px 0 var(--c-paper), -2px 0 0 var(--c-paper);
+}
+.text-outline-primary {
+  text-shadow:
+    -2px -2px 0 var(--c-primary), 0 -2px 0 var(--c-primary),
+    2px -2px 0 var(--c-primary), 2px 0 0 var(--c-primary),
+    2px 2px 0 var(--c-primary), 0 2px 0 var(--c-primary),
+    -2px 2px 0 var(--c-primary), -2px 0 0 var(--c-primary);
+}
+
+/* --- Comic borders (plain-CSS convenience) ---------------- */
+.border-comic {
+  border: var(--border-comic-w) solid var(--c-ink);
+}
+.border-comic-thick {
+  border: var(--border-comic-thick-w) solid var(--c-ink);
+}
+.border-comic-paper {
+  border: var(--border-comic-w) solid var(--c-paper);
+}
+
+/* --- Graphic label chip ----------------------------------- */
+.label-chip {
+  display: inline-block;
+  border: 2px solid var(--c-ink);
+  padding: 0.25em 0.7em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  background: var(--c-primary);
+  color: var(--c-ink);
+}
+
+/* --- Frame-stepped decorative motion (~12fps) -------------- */
+@keyframes bl-step-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes bl-step-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+@keyframes bl-nudge-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+.anim-frame-step {
+  animation-timing-function: steps(12, end);
+}
+.anim-spin-step {
+  animation: bl-step-rotate 6s steps(12, end) infinite;
+}
+.anim-pulse-step {
+  animation: bl-step-pulse 1.6s steps(6, end) infinite;
+}
+.anim-nudge {
+  animation: bl-nudge-y 1.4s var(--ease-out) infinite;
+}
+
+/* --- Reduced motion: kill all CSS animation/transition -----
+       (JS-driven GSAP is gated separately via data-motion) -- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

@@ -1,0 +1,64 @@
+/* ============================================================
+   BIZARRE LOVE — DESIGN TOKENS (single source of truth)
+   Mapped into Tailwind's @theme (inline) in app/globals.css.
+   Never scatter raw hex values through components.
+   ============================================================ */
+
+:root {
+  /* --- Color primitives (exact, locked — see design.md §3) --- */
+  --c-primary: #f4d94e; /* Primary Yellow  */
+  --c-ink: #141414; /* Ink Black      */
+  --c-paper: #f7f1df; /* Paper Cream    */
+  --c-impact: #ec3c43; /* Impact Red     */
+  --c-electric: #16b8b1; /* Electric Cyan  */
+
+  /* Alpha variants used only by textures/overlays */
+  --c-ink-8: rgba(20, 20, 20, 0.08);
+  --c-ink-15: rgba(20, 20, 20, 0.15);
+  --c-ink-40: rgba(20, 20, 20, 0.4);
+  --c-paper-15: rgba(247, 241, 223, 0.15);
+  --c-paper-40: rgba(247, 241, 223, 0.4);
+
+  /* --- Borders (hard edges, comic weight) --- */
+  --border-comic-w: 3px;
+  --border-comic-thick-w: 5px;
+  --radius-panel: 0px;
+
+  /* --- Motion tokens (design.md §5.4) --- */
+  --dur-fast: 140ms;
+  --dur-base: 320ms;
+  --dur-slow: 720ms;
+  --dur-cine: 1200ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-slam: cubic-bezier(0.85, 0, 0.15, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --stagger-fast: 40ms;
+  --stagger-base: 80ms;
+
+  /* --- Texture scale --- */
+  --halftone-size: 8px;
+  --halftone-dot: 1.1px;
+  --grain-size: 160px;
+
+  /* --- Z-index scale (design.md §5.6) --- */
+  --z-parallax-far: 10;
+  --z-content: 20;
+  --z-parallax-near: 30;
+  --z-sticky: 40;
+  --z-nav: 50;
+  --z-overlay: 60;
+  --z-modal: 70;
+  --z-skip: 80;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --halftone-size: 10px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --halftone-size: 12px;
+  }
+}
