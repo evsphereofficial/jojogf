@@ -67,18 +67,31 @@ export const content = {
         id: "b1",
         speaker: "HIM",
         text: "[PLACEHOLDER: his first message]",
+        alts: [
+          "[PLACEHOLDER: take two — the same message, reworded]",
+          "[PLACEHOLDER: the version you both still screenshot]",
+        ],
       },
       {
         id: "b2",
         speaker: "YOU",
         text: "[PLACEHOLDER: your first reply]",
+        alts: [
+          "[PLACEHOLDER: take two — your reply, your words]",
+          "[PLACEHOLDER: the reply that made him laugh]",
+        ],
       },
       {
         id: "b3",
         speaker: "BOTH",
         text: "[PLACEHOLDER: the message that changed everything]",
+        alts: [
+          "[PLACEHOLDER: take two — the message, second edit]",
+          "[PLACEHOLDER: the line you both quote back]",
+        ],
       },
     ] satisfies BubbleContent[],
+    bubbleHint: "TAP A BUBBLE FOR ANOTHER TAKE",
   },
 
   /* ---- CH 03 — THE STAND AWAKENS ---- */
@@ -162,6 +175,8 @@ export const content = {
       },
     ] satisfies MomentContent[],
     sfx: "BAM! BAM!",
+    punch: "PUNCH!",
+    punchHint: "TAP FOR IMPACT FX",
   },
 
   /* ---- CH 05 — THE QUIET BETWEEN BATTLES ---- */
@@ -175,6 +190,8 @@ export const content = {
     ],
     signature: "— [PLACEHOLDER: your name / signature]",
     footnote: "THE QUIET BETWEEN BATTLES",
+    padLabel: "INK PAD",
+    padHint: "DRAG TO DRAW — IT FADES",
   },
 
   /* ---- CH 06 — OUR UNIVERSE ---- */
@@ -288,6 +305,7 @@ export const content = {
     final: "TO BE CONTINUED...",
     sentiment: "[PLACEHOLDER: one closing sentence, in your own words]",
     cta: "READ IT AGAIN FROM THE TOP",
+    hold: "HOLD ME",
     footerNote: "BIZARRE LOVE — VOL. 06 · SIX MONTHS. ONE STORY.",
   },
 };

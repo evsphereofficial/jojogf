@@ -650,4 +650,34 @@ three.js + R3F absent from the initial graph (verified by scanning served chunks
   stays legible over the ink volume without clipping in `overflow-hidden` boxes. The bottom chapter
   bar no longer overflows ≤420px screens: the marker `<ul>` is `min-w-0 flex-1 overflow-x-auto` with
   a `scrollbar-hide` utility (still swipeable), and the FX toggle label raised to 11px (§13 minimum).
+- **D17** *(implementation, playful toys)* Five tappable playthings, all data-labelled, additive
+  (no existing layout restyled), and reduced-motion-aware:
+  1. **Punch-it SFX machine (Ch04)** — tap fires a random Latin SFX stamp + one-frame impact flash +
+     a 260ms screen-kick of the Ch04 section (safe: no pins live in that section — a transformed
+     ancestor would re-anchor `position: fixed` pins, see `kick()` docs).
+  2. **Tap-to-pop bubbles (Ch02)** — `SpeechBubble` gains `onPop` (renders as a `<button>`); each tap
+     wobbles it (anime) and cycles to the next placeholder take (`content.ch02.bubbles[].alts`).
+     The GSAP/anime entrance now targets a new wrapper div while the button keeps hover = shadow-only
+     (D9 one-owner rule preserved).
+  3. **Hold-to-charge finale (Ch09)** — hold Space/Enter/pointer for 900ms: SVG ring fills via a CSS
+     transition (reduced-motion CSS collapses it to an instant jump for free), release early drains
+     it; completion bursts SFX stamps + confetti panels + flash. Kick targets the *button*, never the
+     pinned Ch09 section.
+  4. **Halftone finger-paint (Ch05)** — canvas dot-painting sized by swipe speed, palette read from
+     CSS vars (fallbacks mirror tokens.css); an idle self-stopping rAF loop fades wet ink (~3s, parks
+     at 4.5s idle → zero background cost on phones). Canvas pixels are painted imperatively — no CSS/
+     GSAP/anime touches them, so ownership stays clean. Reduced motion: no fade loop, CLEAR button
+     wipes instead.
+  5. **Konami secret → BIZARRE MODE** — tap the Ch01 `VOL. 06` badge 5× in a 1.6s chain (or the arrow
+     key sequence on desktop) → `store.bizarre` opens a 6.5s window where a fixed layer rains SFX
+     stamps in waves + a pulsing banner (CSS `anim-pulse-step`, auto-disabled under reduced motion).
+  Shared plumbing: `src/lib/sfx.ts` — SFX pools + `spawnStamp`/`screenFlash`/`kick` helpers. All toy
+  DOM is created and destroyed **imperatively** (zero React re-renders per tap); the helper owns each
+  spawned node's transform (wrapper = static placement, inner span = animation target).
+- **D18** *(bugfix, latent)* `z-nav` / `z-modal` / `z-overlay` / `z-skip` were never emitted by
+  Tailwind v4 — it ships no named `z-*` theme namespace, so the tokens.css scale silently didn't map
+  (stacking had been working only by DOM order: modals above the grain overlay purely by source
+  position). All eight `--z-*` tokens now have explicit `.z-*` classes in textures.css (unlayered, so
+  they always win), and the new toys reuse `z-overlay` (60) / `.sfx-flash` — modal (70) still sits
+  above every toy layer.
 

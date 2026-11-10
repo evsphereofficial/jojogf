@@ -161,6 +161,51 @@
   color: var(--c-ink);
 }
 
+/* --- Imperative SFX stamps (playful toys) ------------------
+       Spawned/removed by lib/sfx.ts helpers — never in React
+       state. The wrapper owns static placement transforms; the
+       inner span is the anime.js animation target, so the two
+       never fight over one transform (design.md D9). ---------- */
+.sfx-stamp-wrap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+.sfx-stamp {
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-family: var(--font-anton), Impact, "Arial Narrow", sans-serif;
+  will-change: transform, opacity;
+}
+
+/* --- One-shot full-screen impact flash -------------------- */
+.sfx-flash {
+  position: fixed;
+  inset: 0;
+  background: var(--c-impact);
+  opacity: 0;
+  pointer-events: none;
+  z-index: var(--z-overlay);
+}
+
+/* --- Z-index tokens as utility classes ---------------------
+       Tailwind v4 ships no named `z-*` theme namespace, so
+       `z-nav` / `z-modal` / `z-overlay` / `z-skip` would be
+       silently dropped by the compiler — they are defined here
+       against the tokens.css scale instead. ------------------- */
+.z-parallax-far { z-index: var(--z-parallax-far); }
+.z-content { z-index: var(--z-content); }
+.z-parallax-near { z-index: var(--z-parallax-near); }
+.z-sticky { z-index: var(--z-sticky); }
+.z-nav { z-index: var(--z-nav); }
+.z-overlay { z-index: var(--z-overlay); }
+.z-modal { z-index: var(--z-modal); }
+.z-skip { z-index: var(--z-skip); }
+
 /* --- Hidden scrollbar (navigator rail — remains swipeable)
        Phone perf: avoids layout/paint from a visible scrollbar
        while keeping overflow-x scrolling. ------------------- */

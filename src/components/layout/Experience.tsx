@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ChapterNavigator } from "@/components/navigation/ChapterNavigator";
 import { ProgressBar } from "@/components/navigation/ProgressBar";
 import { SkipLink } from "@/components/navigation/SkipLink";
+import { BizarreOverlay } from "@/components/interactions/BizarreOverlay";
 import { SmoothScroll } from "./SmoothScroll";
 import { SwatchStrip } from "@/components/manga/SwatchStrip";
 import { MetaLabel } from "@/components/typography/MetaLabel";
@@ -41,6 +42,7 @@ export function Experience() {
       <SmoothScroll />
       <ProgressBar />
       <ChapterNavigator />
+      <BizarreOverlay />
 
       {/* Global print grain — procedural, zero downloads.
           Phone perf: full-screen mix-blend-multiply forces an extra

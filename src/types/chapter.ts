@@ -66,6 +66,8 @@ export interface BubbleContent {
   id: string;
   speaker: string;
   text: string;
+  /** extra tap-cycled takes (all placeholder) */
+  alts: string[];
 }
 
 export interface AbilityContent {

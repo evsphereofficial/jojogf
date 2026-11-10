@@ -6,6 +6,7 @@ import { MetaLabel } from "@/components/typography/MetaLabel";
 import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
+import { HalftonePad } from "@/components/interactions/HalftonePad";
 import { gsap, EASE } from "@/lib/gsap";
 import { CHAPTERS } from "@/data/chapters";
 import { content } from "@/data/content";
@@ -21,7 +22,8 @@ export function Chapter05() {
   const titleId = `${chapter.id}-title`;
   const handle = useChapter(chapter.index, titleId);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { headline, lines, signature, footnote, kicker } = content.ch05;
+  const { headline, lines, signature, footnote, kicker, padLabel, padHint } =
+    content.ch05;
 
   useChoreography(contentRef, ({ q }) => {
     /* Gentle header fade — intimacy = restraint (§9.2 rule 6) */
@@ -128,6 +130,14 @@ export function Chapter05() {
         <p className="quiet-sign mt-16 font-accent text-xl italic text-ink/70">
           {signature}
         </p>
+
+        {/* Halftone finger-paint (playful toy) — dots print, then
+            dry away; muted so it never fights the quiet chapter */}
+        <HalftonePad
+          className="mt-12 opacity-90"
+          label={padLabel}
+          hint={padHint}
+        />
 
         <div aria-hidden="true" className="mt-16 h-px w-24 bg-ink/30" />
         <MetaLabel className="quiet-sign mt-4 text-ink/40">{footnote}</MetaLabel>

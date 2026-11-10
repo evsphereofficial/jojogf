@@ -8,6 +8,7 @@ import { ChapterTitle } from "@/components/typography/ChapterTitle";
 import { MetaLabel } from "@/components/typography/MetaLabel";
 import { PlaceholderArt } from "@/components/manga/PlaceholderArt";
 import { ImpactFrame } from "@/components/effects/ImpactFrame";
+import { PunchMachine } from "@/components/interactions/PunchMachine";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { useModalDialog } from "@/hooks/useModalDialog";
@@ -109,7 +110,7 @@ export function Chapter04() {
   const handle = useChapter(chapter.index, titleId);
   const contentRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<MomentContent | null>(null);
-  const { moments, headline, hint, sfx } = content.ch04;
+  const { moments, headline, hint, sfx, punch, punchHint } = content.ch04;
 
   useChoreography(contentRef, ({ q }) => {
     gsap.from(q(".chapter-header"), {
@@ -191,6 +192,13 @@ export function Chapter04() {
               {hint}
             </MetaLabel>
           </div>
+
+          {/* Punch-it SFX machine (playful toy) */}
+          <PunchMachine
+            className="mt-8"
+            label={punch}
+            hint={punchHint}
+          />
 
           {/* Collage — GSAP owns the wrapper, CSS owns the button hover */}
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">

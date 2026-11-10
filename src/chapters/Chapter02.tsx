@@ -1,14 +1,16 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { animate } from "animejs";
 import { ChapterShell } from "@/components/layout/ChapterShell";
 import { ChapterTitle } from "@/components/typography/ChapterTitle";
+import { MetaLabel } from "@/components/typography/MetaLabel";
 import { MangaPanel } from "@/components/manga/MangaPanel";
 import { PlaceholderArt } from "@/components/manga/PlaceholderArt";
 import { SpeechBubble } from "@/components/manga/SpeechBubble";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
+import { useMotionOK } from "@/hooks/useMotionOK";
 import { gsap, ScrollTrigger, EASE } from "@/lib/gsap";
 import { CHAPTERS } from "@/data/chapters";
 import { content } from "@/data/content";
@@ -18,13 +20,33 @@ import { cn } from "@/lib/utils";
  * CHAPTER 02 — THE FIRST ENCOUNTER (design.md §6.1).
  * Cream paper ground: panels print in sequentially under scrub,
  * dialogue bubbles pop (Anime.js one-shot), layers drift sideways.
+ * Interactive: tapping a bubble wobbles it (anime) and cycles to the
+ * next placeholder take — same idea as flipping between script pages.
  */
 export function Chapter02() {
   const chapter = CHAPTERS[1];
   const titleId = `${chapter.id}-title`;
   const handle = useChapter(chapter.index, titleId);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { panels, bubbles, intro } = content.ch02;
+  const { panels, bubbles, intro, bubbleHint } = content.ch02;
+  const motionOK = useMotionOK();
+  const [takes, setTakes] = useState<Record<string, number>>({});
+
+  const popBubble = (id: string, altCount: number) =>
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setTakes((prev) => ({
+        ...prev,
+        [id]: ((prev[id] ?? 0) + 1) % (altCount + 1),
+      }));
+      if (motionOK) {
+        animate(event.currentTarget, {
+          scale: [1, 1.07, 0.97, 1],
+          rotate: [0, -2, 1.5, 0],
+          duration: 420,
+          ease: "outBack",
+        });
+      }
+    };
 
   useChoreography(contentRef, ({ q }) => {
     /* Header entrance */
@@ -148,6 +170,10 @@ export function Chapter02() {
             {intro}
           </p>
 
+          <MetaLabel className="mt-6 inline-block -rotate-1 text-ink/50">
+            {bubbleHint}
+          </MetaLabel>
+
           <div className="mt-14 grid gap-12 lg:mt-20 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-16">
             {panels.map((panel, i) => (
               <div key={panel.id} className="enc-panel-wrap">
@@ -168,16 +194,28 @@ export function Chapter02() {
                 </MangaPanel>
 
                 {bubbles[i] && (
-                  <SpeechBubble
-                    speaker={bubbles[i].speaker}
+                  /* wrapper = GSAP/anime entrance target; the bubble
+                     button inside = tap target (one owner per
+                     transform, design.md D9) */
+                  <div
                     className={cn(
                       "enc-bubble mt-6 max-w-sm",
                       i % 2 === 1 && "lg:ml-auto",
                     )}
-                    side={i % 2 === 1 ? "right" : "left"}
                   >
-                    {bubbles[i].text}
-                  </SpeechBubble>
+                    <SpeechBubble
+                      speaker={bubbles[i].speaker}
+                      side={i % 2 === 1 ? "right" : "left"}
+                      onPop={popBubble(bubbles[i].id, bubbles[i].alts.length)}
+                    >
+                      {(takes[bubbles[i].id] ?? 0) === 0
+                        ? bubbles[i].text
+                        : bubbles[i].alts[
+                            ((takes[bubbles[i].id] ?? 0) - 1) %
+                              bubbles[i].alts.length
+                          ]}
+                    </SpeechBubble>
+                  </div>
                 )}
               </div>
             ))}

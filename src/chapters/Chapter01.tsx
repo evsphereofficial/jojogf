@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { animate } from "animejs";
 import { ChapterShell } from "@/components/layout/ChapterShell";
 import { DisplayText } from "@/components/typography/DisplayText";
-import { MetaLabel } from "@/components/typography/MetaLabel";
 import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
 import { SpeedLines } from "@/components/manga/SpeedLines";
 import { SwatchStrip } from "@/components/manga/SwatchStrip";
@@ -18,6 +17,8 @@ import { useMotionOK } from "@/hooks/useMotionOK";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
 import { gsap, ScrollTrigger, EASE } from "@/lib/gsap";
 import { scrollToTarget } from "@/lib/lenis";
+import { SFX_POOL } from "@/lib/sfx";
+import { useExperienceStore } from "@/lib/store";
 import { CHAPTERS } from "@/data/chapters";
 import { content } from "@/data/content";
 import { cn } from "@/lib/utils";
@@ -27,8 +28,8 @@ const MangaVolumeScene = dynamic(
   { ssr: false, loading: () => null },
 );
 
-/** Original Latin-graphic SFX (design.md §2.1 — no copyrighted glyphs). */
-const SFX_POOL = ["GOROGORO", "DODODO", "DOKAN", "DOON", "ZAN", "BASH"];
+/** Original Latin-graphic SFX live in lib/sfx.ts (shared with the
+    other playful toys — design.md §2.1, no copyrighted glyphs). */
 
 const FLOAT_PANELS = [
   {
@@ -125,6 +126,29 @@ export function Chapter01() {
       animate(inner, { scale: [1, 1.45, 1], duration: 520, ease: "outBack" });
     }
     shuffleSfx();
+  };
+
+  /* Secret: tapping the VOL. 06 badge five times (within a 1.6s
+     chain) opens BIZARRE MODE — see interactions/BizarreOverlay.
+     GSAP owns `.hero-badge` (entrance + scrub); anime owns only the
+     inner span (D9); CSS hover changes colour only. */
+  const triggerBizarre = useExperienceStore((s) => s.triggerBizarre);
+  const badgeInnerRef = useRef<HTMLSpanElement>(null);
+  const badgeTaps = useRef({ count: 0, last: 0 });
+  const tapBadge = () => {
+    const now = Date.now();
+    const taps = badgeTaps.current;
+    if (now - taps.last > 1600) taps.count = 0;
+    taps.last = now;
+    taps.count += 1;
+    const inner = badgeInnerRef.current;
+    if (inner && motionOK) {
+      animate(inner, { scale: [1, 1.14, 1], duration: 300, ease: "outBack" });
+    }
+    if (taps.count >= 5) {
+      taps.count = 0;
+      triggerBizarre();
+    }
   };
 
   useChoreography(contentRef, ({ q, mm }) => {
@@ -326,9 +350,16 @@ export function Chapter01() {
 
         {/* Copy */}
         <div className="hero-copy relative z-20 w-full lg:w-[54%]">
-          <MetaLabel className="hero-badge label-chip inline-block -rotate-2">
-            {content.ch01.edition} · Anniversary Edition
-          </MetaLabel>
+          <button
+            type="button"
+            onClick={tapBadge}
+            aria-label={`${content.ch01.edition} anniversary badge — tap five times for a secret`}
+            className="hero-badge label-chip inline-block -rotate-2 font-sans text-label transition-colors duration-150 hover:bg-electric focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            <span ref={badgeInnerRef} className="inline-block">
+              {content.ch01.edition} · Anniversary Edition
+            </span>
+          </button>
 
           <h1
             id={titleId}

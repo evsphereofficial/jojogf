@@ -8,6 +8,7 @@ import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
 import { SpeedLines } from "@/components/manga/SpeedLines";
 import { SwatchStrip } from "@/components/manga/SwatchStrip";
 import { MagneticButton } from "@/components/interactions/MagneticButton";
+import { HoldToCharge } from "@/components/interactions/HoldToCharge";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { gsap, EASE } from "@/lib/gsap";
@@ -26,7 +27,7 @@ export function Chapter09() {
   const titleId = `${chapter.id}-title`;
   const handle = useChapter(chapter.index, titleId);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { lines, final, sentiment, cta, kicker } = content.ch09;
+  const { lines, final, sentiment, cta, kicker, hold } = content.ch09;
 
   const replay = () => scrollToTarget(0);
 
@@ -144,6 +145,8 @@ export function Chapter09() {
 
           <div className="fin-cta mt-10 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
             <MagneticButton onClick={replay}>{cta}</MagneticButton>
+            {/* Hold-to-charge finale (playful toy) */}
+            <HoldToCharge label={hold} />
             <SwatchStrip className="fin-swatch" />
           </div>
 

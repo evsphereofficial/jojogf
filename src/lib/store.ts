@@ -18,7 +18,13 @@ interface ExperienceState {
   /** In-app REDUCE MOTION toggle (design.md §13) */
   motionOverride: MotionOverride;
   setMotionOverride: (value: MotionOverride) => void;
+  /** Secret BIZARRE MODE window (Ch01 badge ×5 / Konami keys) */
+  bizarre: boolean;
+  triggerBizarre: () => void;
 }
+
+/** module-scope timer so retriggers extend, never stack */
+let bizarreTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const useExperienceStore = create<ExperienceState>((set) => ({
   activeChapter: 1,
@@ -34,6 +40,18 @@ export const useExperienceStore = create<ExperienceState>((set) => ({
       }
     }
     set({ motionOverride: value });
+  },
+  bizarre: false,
+  triggerBizarre: () => {
+    if (bizarreTimer !== undefined) clearTimeout(bizarreTimer);
+    set({ bizarre: true });
+    bizarreTimer = setTimeout(
+      () => {
+        set({ bizarre: false });
+        bizarreTimer = undefined;
+      },
+      6500,
+    );
   },
 }));
 
