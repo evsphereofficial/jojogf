@@ -9,6 +9,7 @@ import { MetaLabel } from "@/components/typography/MetaLabel";
 import { PlaceholderArt } from "@/components/manga/PlaceholderArt";
 import { ImpactFrame } from "@/components/effects/ImpactFrame";
 import { PunchMachine } from "@/components/interactions/PunchMachine";
+import { HeartCatch } from "@/components/interactions/HeartCatch";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { useModalDialog } from "@/hooks/useModalDialog";
@@ -110,7 +111,8 @@ export function Chapter04() {
   const handle = useChapter(chapter.index, titleId);
   const contentRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<MomentContent | null>(null);
-  const { moments, headline, hint, sfx, punch, punchHint } = content.ch04;
+  const { moments, headline, hint, sfx, punch, punchHint, gameLabel, gameHint } =
+    content.ch04;
 
   useChoreography(contentRef, ({ q }) => {
     gsap.from(q(".chapter-header"), {
@@ -144,6 +146,15 @@ export function Chapter04() {
           scrub: 0.6,
         },
       });
+    });
+
+    /* Heart Catch game slides in */
+    gsap.from(q(".hc-wrap"), {
+      y: 46,
+      opacity: 0,
+      duration: 0.7,
+      ease: EASE.back,
+      scrollTrigger: { trigger: q(".hc-wrap")[0], start: "top 92%", once: true },
     });
 
     /* Impact frame flashes once at the section seam.
@@ -199,6 +210,11 @@ export function Chapter04() {
             label={punch}
             hint={punchHint}
           />
+
+          {/* Heart Catch — playable game (romantic pass, D19) */}
+          <div className="hc-wrap mt-10 max-w-2xl">
+            <HeartCatch label={gameLabel} hint={gameHint} />
+          </div>
 
           {/* Collage — GSAP owns the wrapper, CSS owns the button hover */}
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">

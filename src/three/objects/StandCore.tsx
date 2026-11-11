@@ -38,7 +38,11 @@ export function StandCore({ progressRef, pointerRef, stepDrag }: StandObjectProp
   );
 
   const compact = size.width < 1024;
-  const baseScale = compact ? 0.72 : 1;
+  /* Stage-fill pass (design.md D19): the Stand read as a small
+     centred object inside a very tall stage. It now fills the frame
+     — larger base scale on both breakpoints, a higher reveal floor
+     (never tiny at scrub start) and a faster reveal ramp. */
+  const baseScale = compact ? 1 : 1.55;
 
   useFrame((state, delta) => {
     const g = group.current;
@@ -57,10 +61,11 @@ export function StandCore({ progressRef, pointerRef, stepDrag }: StandObjectProp
       dragY = d.y;
     }
 
-    // Reveal across the first quarter of the chapter scrub
-    const reveal = Math.min(1, Math.max(0, (p - 0.04) / 0.22));
+    // Reveal across the first ~18% of the chapter scrub — starts
+    // big (0.65 floor) so the stage never reads as an empty box
+    const reveal = Math.min(1, Math.max(0, (p - 0.02) / 0.16));
     const eased = 1 - Math.pow(1 - reveal, 3);
-    g.scale.setScalar((0.55 + eased * 0.45) * baseScale);
+    g.scale.setScalar((0.65 + eased * 0.35) * baseScale);
 
     g.rotation.y = p * Math.PI * 1.8 + px * 0.5 + t * 0.04 + dragX;
     g.rotation.x = py * 0.25 + Math.sin(t * 0.6) * 0.04 + dragY;

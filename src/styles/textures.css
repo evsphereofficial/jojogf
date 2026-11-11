@@ -206,6 +206,93 @@
 .z-modal { z-index: var(--z-modal); }
 .z-skip { z-index: var(--z-skip); }
 
+/* --- Hearts (romantic pass, D19) ---------------------------
+       Pure-CSS heart glyph: two rotated arches on ::before/::after.
+       The element's own transform stays free for whichever owner
+       animates it — CSS keyframes for ambient floaters, anime.js
+       for one-shot spawns (D9 one-owner rule). --------------- */
+.bit-heart {
+  --hsize: 16px;
+  position: absolute;
+  width: var(--hsize);
+  height: var(--hsize);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.bit-heart::before,
+.bit-heart::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 80%;
+  border-radius: 999px 999px 0 0;
+  background: var(--heart-color, var(--c-impact));
+}
+.bit-heart::before {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+}
+.bit-heart::after {
+  left: 50%;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+}
+.bit-heart-fixed {
+  position: fixed;
+}
+/* Ambient rise — per-heart timing via custom props, so N hearts
+   cost zero JS (composition-only). Starts invisible during the
+   negative delay, ends invisible → seamless loop restart. */
+@keyframes bl-heart-rise {
+  0% {
+    transform: translate(var(--h-drift, 0), 6vh) scale(0.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(calc(var(--h-drift, 0) * -1), -20vh) scale(0.95);
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(var(--h-drift, 0), -46vh) scale(1.05);
+    opacity: 0;
+  }
+}
+.heart-rise {
+  opacity: 0;
+  animation: bl-heart-rise var(--h-dur, 10s) linear var(--h-delay, 0s) infinite;
+}
+
+/* --- Heart Catch arena (playable game, Ch04, D19) ---------- */
+.hc-arena {
+  touch-action: manipulation;
+}
+.hc-heart {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* glyph fills the hit area and anchors its pseudo-arches to the
+   (positioned) button instead of itself */
+.hc-heart .bit-heart {
+  position: static;
+}
+.hc-heart:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
 /* --- Hidden scrollbar (navigator rail — remains swipeable)
        Phone perf: avoids layout/paint from a visible scrollbar
        while keeping overflow-x scrolling. ------------------- */

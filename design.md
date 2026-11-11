@@ -680,4 +680,38 @@ three.js + R3F absent from the initial graph (verified by scanning served chunks
   position). All eight `--z-*` tokens now have explicit `.z-*` classes in textures.css (unlayered, so
   they always win), and the new toys reuse `z-overlay` (60) / `.sfx-flash` — modal (70) still sits
   above every toy layer.
+- **D19** *(implementation, playable games + romantic pass)* User feedback: Ch03's stage "stays empty
+  for a while", Ch05's ink pad "ink doesn't stay" — plus a request for more playable/interactive
+  things, theme-matching hearts, and an overall romantic feel. Four fixes + three new pieces:
+  1. **Persistent ink (Ch05)** — the HalftonePad's idle rAF fade loop is gone: ink stays until
+     CLEAR. The loop had made the toy feel broken (drawing vanished mid-use) and cost a background
+     rAF on phones. Now zero background cost by construction. Gained a **DOTS / HEARTS brush toggle**
+     (hearts drawn with a canvas bezier path in the palette bands) — `padDots`/`padHearts` labels.
+  2. **Stand stage fills (Ch03)** — `StandCore` base scale 0.72/1 → **1 / 1.55** (compact/desktop),
+     reveal floor 0.55 → **0.65**, reveal window `(p−0.04)/0.22` → `(p−0.02)/0.16` (full size by
+     16% of the scrub instead of 22%), WebGL fallback hexagon 52vmin → 64vmin. Stage also gets
+     ambient `FloatingHearts`.
+  3. **HEART CATCH (Ch04, new game)** — 20-second round: hearts pop into an arena, tap to catch
+     before they drift off (1.5s life, max 6 alive), each catch fires a random `ROMANCE_POOL`
+     stamp ("DOKI DOKI", "KISS!", "LOVE!"…) + score/timer HUD. Rounds auto-pause when the arena
+     leaves the viewport (IntersectionObserver stashes remaining ms, resumes without double-spawn
+     via `spawnFnRef`) and clean up fully on unmount. Hearts are real `<button>`s (keyboard
+     focusable); reduced motion keeps the game playable with no tweens. React state flips only
+     phase (idle/running/done) — hearts, stamps and HUD text are imperative.
+  4. **HeartTrail (global)** — throttled passive `pointermove` (90ms / 26px, mouse+pen only,
+     max 18 alive) spawns tiny hearts that drift up and fade via `spawnHeart`. Mounted in
+     `Experience`, `null` render, gated by `useMotionOK` + `(pointer: fine)` media query.
+  5. **`spawnHeart` (lib/sfx.ts)** — sibling of `spawnStamp`: appends a pure-CSS `.bit-heart`
+     (two rotated arch pseudos, `--hsize`/`--heart-color` custom props), anime drift+fade, timed
+     removal, `reduced` variant. Plus `ROMANCE_POOL`.
+  6. **Ambient `FloatingHearts` (manga/)** — decorative rising hearts for a `relative overflow-hidden`
+     ancestor; CSS-only (`bl-heart-rise` keyframes driven by per-heart `--h-dur`/`--h-delay`/
+     `--h-drift`, seeded mulberry32 so SSR markup hydrates exactly), `useMotionOK`-gated (renders
+     `null` under reduced motion). Used in **Ch03 stage, Ch05, Ch08 letter, Ch09 finale**.
+  7. **Heart accents** — Ch07 milestone markers get a rotated `Heart` icon badge (desktop + mobile),
+     Ch08 sign-off gets a heart after the signature, footer `BIZARRE LOVE` gets a heart, Ch02 bubble
+     pops burst 3 `spawnHeart`s. Palette-locked: impact red / primary yellow / electric cyan only —
+     no new hues introduced.
+  Reduced-motion contract holds throughout: ambient hearts and trail don't mount, game runs with
+  static hearts, stamps spawn without tween. No layout was restyled — everything is additive.
 

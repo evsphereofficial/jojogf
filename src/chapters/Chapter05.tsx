@@ -7,6 +7,7 @@ import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { HalftonePad } from "@/components/interactions/HalftonePad";
+import { FloatingHearts } from "@/components/manga/FloatingHearts";
 import { gsap, EASE } from "@/lib/gsap";
 import { CHAPTERS } from "@/data/chapters";
 import { content } from "@/data/content";
@@ -22,8 +23,17 @@ export function Chapter05() {
   const titleId = `${chapter.id}-title`;
   const handle = useChapter(chapter.index, titleId);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { headline, lines, signature, footnote, kicker, padLabel, padHint } =
-    content.ch05;
+  const {
+    headline,
+    lines,
+    signature,
+    footnote,
+    kicker,
+    padLabel,
+    padHint,
+    padDots,
+    padHearts,
+  } = content.ch05;
 
   useChoreography(contentRef, ({ q }) => {
     /* Gentle header fade — intimacy = restraint (§9.2 rule 6) */
@@ -96,6 +106,16 @@ export function Chapter05() {
       {/* Soft halftone field, barely there */}
       <HalftoneLayer tone="ink" fade className="quiet-tone opacity-[0.07]" />
 
+      {/* Ambient hearts — painted behind the text column (DOM order:
+          the content div below is positioned and comes last) */}
+      <FloatingHearts
+        count={7}
+        size={17}
+        color="var(--c-impact)"
+        duration={9500}
+        className="opacity-80"
+      />
+
       <div className="relative mx-auto flex min-h-[90svh] max-w-3xl flex-col justify-center px-6 py-32 lg:px-12">
         <MetaLabel className="quiet-kicker text-ink/50">{kicker}</MetaLabel>
 
@@ -131,12 +151,15 @@ export function Chapter05() {
           {signature}
         </p>
 
-        {/* Halftone finger-paint (playful toy) — dots print, then
-            dry away; muted so it never fights the quiet chapter */}
+        {/* Halftone finger-paint (playful toy) — ink stays until you
+            CLEAR it; DOTS or HEARTS brush. Muted so it never fights
+            the quiet chapter */}
         <HalftonePad
           className="mt-12 opacity-90"
           label={padLabel}
           hint={padHint}
+          dotsLabel={padDots}
+          heartsLabel={padHearts}
         />
 
         <div aria-hidden="true" className="mt-16 h-px w-24 bg-ink/30" />

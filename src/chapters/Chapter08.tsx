@@ -4,6 +4,8 @@ import { useRef } from "react";
 import { ChapterShell } from "@/components/layout/ChapterShell";
 import { MetaLabel } from "@/components/typography/MetaLabel";
 import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
+import { FloatingHearts } from "@/components/manga/FloatingHearts";
+import { Heart } from "lucide-react";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { gsap, EASE } from "@/lib/gsap";
@@ -89,6 +91,16 @@ export function Chapter08() {
     >
       <HalftoneLayer tone="ink" fade className="opacity-[0.06]" />
 
+      {/* Ambient hearts behind the letter sheet (DOM order: the
+          relative sheet below paints above them) */}
+      <FloatingHearts
+        count={6}
+        size={16}
+        color="var(--c-impact)"
+        duration={10000}
+        className="opacity-70"
+      />
+
       <div className="relative mx-auto max-w-3xl px-6 py-28 lg:px-12 lg:py-36">
         <div
           className="letter-sheet relative border-[3px] border-ink bg-paper px-6 py-10 shadow-comic sm:px-10 sm:py-14"
@@ -122,7 +134,16 @@ export function Chapter08() {
           {/* Sign-off */}
           <div className="letter-sign mt-12">
             <div aria-hidden="true" className="letter-rule h-[3px] w-40 bg-impact" />
-            <p className="mt-4 font-accent text-xl italic text-ink">{signOff}</p>
+            <p className="mt-4 flex items-center gap-2 font-accent text-xl italic text-ink">
+              {signOff}
+              <Heart
+                aria-hidden="true"
+                size={16}
+                strokeWidth={2.5}
+                fill="currentColor"
+                className="shrink-0 rotate-[-8deg] text-impact"
+              />
+            </p>
           </div>
 
           {/* Seal */}

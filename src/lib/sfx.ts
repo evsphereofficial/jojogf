@@ -38,6 +38,16 @@ export const BIZARRE_POOL = [
   "KRAK!",
 ];
 
+/** Romantic vocabulary — HeartCatch catches, bubble pops, finale bursts. */
+export const ROMANCE_POOL = [
+  "DOKI DOKI",
+  "KISS!",
+  "LOVE!",
+  "XOXO",
+  "BE MINE",
+  "SWOON!",
+];
+
 /** Random pick that never returns `current` (for tap-to-shuffle). */
 export function pickSfx(pool: string[], current?: string): string {
   if (pool.length === 0) return "";
@@ -120,6 +130,66 @@ export function spawnStamp(options: StampOptions): void {
       onComplete: () => wrap.remove(),
     });
   }, life);
+}
+
+export interface HeartOptions {
+  /** positioned ancestor (or body when `fixed`) */
+  parent: HTMLElement;
+  /** px offsets from the parent's top-left (viewport coords when `fixed`) */
+  x: number;
+  y: number;
+  /** glyph box size in px (default 16) */
+  size?: number;
+  /** CSS colour for the glyph — any valid value (defaults to impact red) */
+  color?: string;
+  /** ms alive before removal (default 1200) */
+  life?: number;
+  /** position against the viewport instead of the parent (trail mode) */
+  fixed?: boolean;
+  /** no motion: appear, hold for `life`, remove */
+  reduced?: boolean;
+}
+
+/**
+ * Spawn a pure-CSS heart (`.bit-heart`) that pops, drifts up and
+ * fades. Same imperative contract as `spawnStamp`: the helper owns
+ * the node's transform, removal is a no-op if already detached.
+ * Reduced motion: static glyph, timed removal, no tween.
+ */
+export function spawnHeart(options: HeartOptions): void {
+  const {
+    parent,
+    x,
+    y,
+    size = 16,
+    color = "var(--c-impact)",
+    life = 1200,
+    fixed = false,
+    reduced = false,
+  } = options;
+
+  const el = document.createElement("span");
+  el.className = fixed ? "bit-heart bit-heart-fixed" : "bit-heart";
+  el.style.setProperty("--hsize", `${Math.round(size)}px`);
+  el.style.setProperty("--heart-color", color);
+  el.style.left = `${Math.round(x - size / 2)}px`;
+  el.style.top = `${Math.round(y - size / 2)}px`;
+
+  parent.appendChild(el);
+
+  if (reduced) {
+    window.setTimeout(() => el.remove(), life);
+    return;
+  }
+
+  animate(el, {
+    y: [0, -36 - Math.random() * 26],
+    scale: [0.3, 1.15, 1],
+    opacity: [0, 1, 1, 0],
+    duration: life,
+    ease: "outQuad",
+    onComplete: () => el.remove(),
+  });
 }
 
 /**

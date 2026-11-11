@@ -6,6 +6,7 @@ import { ChapterShell } from "@/components/layout/ChapterShell";
 import { ChapterTitle } from "@/components/typography/ChapterTitle";
 import { MetaLabel } from "@/components/typography/MetaLabel";
 import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
+import { FloatingHearts } from "@/components/manga/FloatingHearts";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { useDragRotate } from "@/hooks/useDragRotate";
@@ -26,7 +27,7 @@ const StandScene = dynamic(() => import("@/three/scenes/StandScene"), {
 function StandFallback() {
   return (
     <div className="grid h-full w-full place-items-center">
-      <div className="relative grid h-[52vmin] w-[52vmin] place-items-center">
+      <div className="relative grid h-[64vmin] w-[64vmin] place-items-center">
         <span
           aria-hidden="true"
           className="absolute inset-0 border-[3px] border-primary"
@@ -204,6 +205,14 @@ export function Chapter03() {
             <div
               aria-hidden="true"
               className="stand-rays pointer-events-none absolute inset-[-30%] opacity-30 speed-rays speed-rays-primary"
+            />
+
+            {/* Ambient rising hearts fill the stage around the Stand */}
+            <FloatingHearts
+              count={9}
+              size={20}
+              color="var(--c-impact)"
+              duration={8000}
             />
 
             {/* Drag-to-inspect surface: touch-pan-y keeps vertical

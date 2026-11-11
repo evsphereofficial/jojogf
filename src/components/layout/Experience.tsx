@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import { Heart } from "lucide-react";
 import { ChapterNavigator } from "@/components/navigation/ChapterNavigator";
 import { ProgressBar } from "@/components/navigation/ProgressBar";
 import { SkipLink } from "@/components/navigation/SkipLink";
 import { BizarreOverlay } from "@/components/interactions/BizarreOverlay";
+import { HeartTrail } from "@/components/interactions/HeartTrail";
 import { SmoothScroll } from "./SmoothScroll";
 import { SwatchStrip } from "@/components/manga/SwatchStrip";
 import { MetaLabel } from "@/components/typography/MetaLabel";
@@ -43,6 +45,7 @@ export function Experience() {
       <ProgressBar />
       <ChapterNavigator />
       <BizarreOverlay />
+      <HeartTrail />
 
       {/* Global print grain — procedural, zero downloads.
           Phone perf: full-screen mix-blend-multiply forces an extra
@@ -68,8 +71,15 @@ export function Experience() {
       <footer className="relative border-t-[3px] border-ink bg-ink px-6 py-10 text-paper lg:px-12">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-display text-3xl text-primary uppercase">
+            <p className="flex items-center gap-3 font-display text-3xl text-primary uppercase">
               BIZARRE LOVE
+              <Heart
+                aria-hidden="true"
+                size={22}
+                strokeWidth={2.5}
+                fill="currentColor"
+                className="shrink-0 rotate-[-8deg] text-impact"
+              />
             </p>
             <MetaLabel className="mt-2 block text-paper/70">
               {content.ch09.footerNote}

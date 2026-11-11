@@ -12,6 +12,7 @@ import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { useMotionOK } from "@/hooks/useMotionOK";
 import { gsap, ScrollTrigger, EASE } from "@/lib/gsap";
+import { spawnHeart } from "@/lib/sfx";
 import { CHAPTERS } from "@/data/chapters";
 import { content } from "@/data/content";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,20 @@ export function Chapter02() {
           duration: 420,
           ease: "outBack",
         });
+        /* little heart burst from the tapped bubble */
+        const rect = event.currentTarget.getBoundingClientRect();
+        for (let i = 0; i < 3; i++) {
+          spawnHeart({
+            parent: document.body,
+            x: rect.left + rect.width * (0.3 + Math.random() * 0.4),
+            y: rect.top + rect.height * 0.4,
+            fixed: true,
+            size: 12 + Math.random() * 8,
+            color:
+              i === 1 ? "var(--c-electric)" : "var(--c-impact)",
+            life: 900,
+          });
+        }
       }
     };
 

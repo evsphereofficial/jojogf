@@ -177,6 +177,8 @@ export const content = {
     sfx: "BAM! BAM!",
     punch: "PUNCH!",
     punchHint: "TAP FOR IMPACT FX",
+    gameLabel: "HEART CATCH",
+    gameHint: "TAP THE HEARTS BEFORE THEY FLOAT AWAY",
   },
 
   /* ---- CH 05 — THE QUIET BETWEEN BATTLES ---- */
@@ -191,7 +193,9 @@ export const content = {
     signature: "— [PLACEHOLDER: your name / signature]",
     footnote: "THE QUIET BETWEEN BATTLES",
     padLabel: "INK PAD",
-    padHint: "DRAG TO DRAW — IT FADES",
+    padHint: "DRAG TO DRAW — THE INK STAYS",
+    padDots: "DOTS",
+    padHearts: "HEARTS",
   },
 
   /* ---- CH 06 — OUR UNIVERSE ---- */

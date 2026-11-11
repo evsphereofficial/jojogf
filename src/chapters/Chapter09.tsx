@@ -7,6 +7,7 @@ import { MetaLabel } from "@/components/typography/MetaLabel";
 import { HalftoneLayer } from "@/components/manga/HalftoneLayer";
 import { SpeedLines } from "@/components/manga/SpeedLines";
 import { SwatchStrip } from "@/components/manga/SwatchStrip";
+import { FloatingHearts } from "@/components/manga/FloatingHearts";
 import { MagneticButton } from "@/components/interactions/MagneticButton";
 import { HoldToCharge } from "@/components/interactions/HoldToCharge";
 import { useChapter } from "@/hooks/useChapter";
@@ -112,6 +113,15 @@ export function Chapter09() {
       <div className="fin-stage relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-6 py-28 text-center lg:py-20">
         <HalftoneLayer tone="ink" fade className="fin-halftone opacity-40" />
         <SpeedLines variant="rays" tone="ink" className="fin-rays opacity-[0.12]" />
+
+        {/* Ambient hearts — romantic finale (painted behind the
+            z-10 composition below) */}
+        <FloatingHearts
+          count={12}
+          size={22}
+          color="var(--c-impact)"
+          duration={6500}
+        />
 
         <div className="fin-composition relative z-10 flex w-full max-w-5xl flex-col items-center">
           <MetaLabel className="fin-kicker label-chip -rotate-2">

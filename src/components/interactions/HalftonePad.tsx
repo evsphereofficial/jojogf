@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useMotionOK } from "@/hooks/useMotionOK";
 import { MetaLabel } from "@/components/typography/MetaLabel";
 import { cn } from "@/lib/utils";
 
@@ -10,36 +9,43 @@ interface HalftonePadProps {
   label: string;
   /** hint shown while the pad is empty */
   hint: string;
+  /** brush toggle: dots label */
+  dotsLabel: string;
+  /** brush toggle: hearts label */
+  heartsLabel: string;
   className?: string;
 }
 
-/** ms of inactivity before the fade loop stops (and the pad self-clears) */
-const IDLE_MS = 4500;
-/** alpha erased per frame — ~3s for a dot to disappear */
-const FADE_ALPHA = 0.03;
+type Brush = "dots" | "hearts";
 
 /**
- * Halftone finger-paint (playful toy).
+ * Halftone finger-paint (playful toy, design.md D19).
  *
- * Drag a finger/cursor: dots print in cycling palette bands, sized by
- * speed (slow = fat ink dot, fast = fine speck). Once you stop, the
- * dots fade away like wet ink — the loop idles out and cancels
- * itself, so there is zero background cost on phones when unused.
+ * Drag a finger/cursor: the chosen brush prints — halftone dots sized
+ * by swipe speed, or ink hearts — in cycling palette bands. The ink
+ * **stays** until CLEAR (no fade loop: zero background cost on
+ * phones, and the drawing is yours to keep).
  *
- * Ownership: canvas pixels are painted imperatively (no CSS/GSAP/anime
- * touches them — nothing conflicts). Under reduced motion the fade
- * loop never starts; the CLEAR button wipes instead.
+ * Two brushes via a DOTS/HEARTS toggle; hearts are drawn with a
+ * canvas bezier path in the palette colours. Canvas pixels are
+ * painted imperatively — no CSS/GSAP/anime touches them, so
+ * ownership stays clean. Under reduced motion nothing differs:
+ * painting was always static.
  */
-export function HalftonePad({ label, hint, className }: HalftonePadProps) {
-  const motionOK = useMotionOK();
+export function HalftonePad({
+  label,
+  hint,
+  dotsLabel,
+  heartsLabel,
+  className,
+}: HalftonePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const drawingRef = useRef(false);
   const lastRef = useRef<{ x: number; y: number } | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const lastInkRef = useRef(0);
   const colorsRef = useRef<string[]>([]);
-  const dotCountRef = useRef(0);
+  const countRef = useRef(0);
+  const [brush, setBrush] = useState<Brush>("dots");
   const [hasInk, setHasInk] = useState(false);
 
   /* ---- setup: sizing, palette, resize ---- */
@@ -81,63 +87,55 @@ export function HalftonePad({ label, hint, className }: HalftonePadProps) {
     };
   }, []);
 
-  /* ---- fade loop (motion-safe) ---- */
-  const stopFade = useCallback(() => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-  }, []);
+  /* ---- brush strokes (imperative canvas pixels) ---- */
 
-  /* Plain function (hoisted) so the loop can schedule itself without
-     touching a const before its declaration. Reads only refs. */
-  function fadeStep() {
-    const canvas = canvasRef.current;
-    const ctx = ctxRef.current;
-    if (!canvas || !ctx) {
-      rafRef.current = null;
-      return;
-    }
-    rafRef.current = requestAnimationFrame(fadeStep);
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = canvas.width / dpr;
-    const h = canvas.height / dpr;
-
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fillStyle = `rgba(0,0,0,${FADE_ALPHA})`;
-    ctx.fillRect(0, 0, w, h);
-    ctx.globalCompositeOperation = "source-over";
-
-    if (Date.now() - lastInkRef.current > IDLE_MS) {
-      /* fully dried — wipe clean and park the loop */
-      ctx.clearRect(0, 0, w, h);
-      stopFade();
-      setHasInk(false);
-    }
-  }
-
-  const startFade = () => {
-    if (!motionOK) return; /* reduced motion: ink stays until CLEAR */
-    if (rafRef.current !== null) return;
-    rafRef.current = requestAnimationFrame(fadeStep);
+  /** heart outline via two symmetric cubic beziers (canvas path) */
+  const heartPath = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    s: number,
+  ) => {
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.5);
+    ctx.bezierCurveTo(
+      x + s * 0.9,
+      y + s * 0.1,
+      x + s * 0.6,
+      y - s * 0.55,
+      x,
+      y - s * 0.15,
+    );
+    ctx.bezierCurveTo(
+      x - s * 0.6,
+      y - s * 0.55,
+      x - s * 0.9,
+      y + s * 0.1,
+      x,
+      y + s * 0.5,
+    );
+    ctx.closePath();
   };
 
-  /* unmount: cancel the loop */
-  useEffect(() => stopFade, [stopFade]);
-
-  /* ---- drawing ---- */
-  const dotAt = (x: number, y: number, speed: number) => {
+  const stampAt = useCallback((x: number, y: number, speed: number) => {
     const ctx = ctxRef.current;
     const colors = colorsRef.current;
     if (!ctx || colors.length === 0) return;
-    const radius = Math.max(3, Math.min(15, 3 + speed * 0.35));
-    ctx.fillStyle = colors[Math.floor(dotCountRef.current / 6) % colors.length];
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
-    dotCountRef.current += 1;
-  };
+    /* hearts change colour every 3 stamps, dots every 6 */
+    const stride = 6;
+    ctx.fillStyle = colors[Math.floor(countRef.current / stride) % colors.length];
+    if (brush === "hearts") {
+      const s = Math.max(9, Math.min(20, 9 + speed * 0.28));
+      heartPath(ctx, x, y, s);
+      ctx.fill();
+    } else {
+      const radius = Math.max(3, Math.min(15, 3 + speed * 0.35));
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    countRef.current += 1;
+  }, [brush]);
 
   const localPoint = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -150,10 +148,8 @@ export function HalftonePad({ label, hint, className }: HalftonePadProps) {
     drawingRef.current = true;
     const p = localPoint(event);
     lastRef.current = p;
-    lastInkRef.current = Date.now();
-    dotAt(p.x, p.y, 0);
+    stampAt(p.x, p.y, 0);
     if (!hasInk) setHasInk(true);
-    startFade();
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -162,18 +158,18 @@ export function HalftonePad({ label, hint, className }: HalftonePadProps) {
     const dx = p.x - lastRef.current.x;
     const dy = p.y - lastRef.current.y;
     const dist = Math.hypot(dx, dy);
-    if (dist < 4) return;
-    /* interpolate so fast swipes leave a continuous dot trail */
-    const steps = Math.min(24, Math.floor(dist / 8));
+    /* hearts need breathing room, dots want a continuous trail */
+    const gap = brush === "hearts" ? 22 : 8;
+    if (dist < gap) return;
+    const steps = Math.min(24, Math.floor(dist / gap));
     for (let i = 1; i <= steps; i++) {
-      dotAt(
+      stampAt(
         lastRef.current.x + (dx * i) / steps,
         lastRef.current.y + (dy * i) / steps,
         dist / steps,
       );
     }
     lastRef.current = p;
-    lastInkRef.current = Date.now();
   };
 
   const endStroke = () => {
@@ -188,21 +184,54 @@ export function HalftonePad({ label, hint, className }: HalftonePadProps) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
     }
-    stopFade();
+    countRef.current = 0;
     setHasInk(false);
-  }, [stopFade]);
+  }, []);
 
   return (
     <div className={cn("relative", className)}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <MetaLabel className="text-ink/45">{label}</MetaLabel>
-        <button
-          type="button"
-          onClick={clear}
-          className="label-chip text-[0.6875rem] transition-colors duration-150 hover:bg-impact hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-        >
-          CLEAR
-        </button>
+        <div className="flex items-center gap-2">
+          {/* brush toggle */}
+          <div role="group" aria-label="Brush" className="flex">
+            <button
+              type="button"
+              aria-pressed={brush === "dots"}
+              onClick={() => setBrush("dots")}
+              className={cn(
+                "border-[2px] border-ink px-3 py-1 font-sans text-[0.6875rem] font-bold tracking-[0.18em] uppercase",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+                brush === "dots"
+                  ? "bg-ink text-primary"
+                  : "bg-paper text-ink hover:bg-primary",
+              )}
+            >
+              {dotsLabel}
+            </button>
+            <button
+              type="button"
+              aria-pressed={brush === "hearts"}
+              onClick={() => setBrush("hearts")}
+              className={cn(
+                "-ml-[2px] border-[2px] border-ink px-3 py-1 font-sans text-[0.6875rem] font-bold tracking-[0.18em] uppercase",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+                brush === "hearts"
+                  ? "bg-impact text-paper"
+                  : "bg-paper text-ink hover:bg-primary",
+              )}
+            >
+              {heartsLabel}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={clear}
+            className="label-chip text-[0.6875rem] transition-colors duration-150 hover:bg-impact hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            CLEAR
+          </button>
+        </div>
       </div>
 
       <div className="relative h-44 w-full overflow-hidden border-[3px] border-dashed border-ink/30 bg-paper/60 sm:h-52">

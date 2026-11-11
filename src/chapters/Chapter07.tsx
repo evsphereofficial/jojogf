@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { ChapterShell } from "@/components/layout/ChapterShell";
 import { MetaLabel } from "@/components/typography/MetaLabel";
 import { PlaceholderArt } from "@/components/manga/PlaceholderArt";
+import { Heart } from "lucide-react";
 import { useChapter } from "@/hooks/useChapter";
 import { useChoreography } from "@/hooks/useChoreography";
 import { gsap, EASE } from "@/lib/gsap";
@@ -174,12 +175,18 @@ export function Chapter07() {
                 key={ms.id}
                 className="gold-card relative w-[26rem] shrink-0 border-[3px] border-ink bg-paper shadow-comic"
               >
-                {/* Marker sitting on the rail */}
+                {/* Marker sitting on the rail — pinned heart accent */}
                 <span
                   aria-hidden="true"
                   className="absolute -top-[86px] left-8 grid h-12 w-12 place-items-center border-[4px] border-ink bg-impact font-display text-lg text-paper"
                 >
                   {String(i + 1).padStart(2, "0")}
+                  <Heart
+                    size={14}
+                    strokeWidth={3}
+                    fill="currentColor"
+                    className="absolute -right-2.5 -top-2.5 rotate-12 text-primary [filter:drop-shadow(1.5px_1.5px_0_var(--c-ink))]"
+                  />
                 </span>
 
                 <div className="aspect-[16/10] overflow-hidden border-b-[3px] border-ink">
@@ -224,6 +231,12 @@ export function Chapter07() {
                 className="absolute top-1 left-0 grid h-12 w-12 place-items-center border-[4px] border-ink bg-impact font-display text-base text-paper"
               >
                 {String(i + 1).padStart(2, "0")}
+                <Heart
+                  size={13}
+                  strokeWidth={3}
+                  fill="currentColor"
+                  className="absolute -right-2 -top-2 rotate-12 text-primary [filter:drop-shadow(1.5px_1.5px_0_var(--c-ink))]"
+                />
               </span>
               <article className="gold-card border-[3px] border-ink bg-paper shadow-comic">
                 <div className="aspect-[16/10] overflow-hidden border-b-[3px] border-ink">
